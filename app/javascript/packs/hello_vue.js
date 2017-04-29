@@ -7,9 +7,23 @@
 import Vue from 'vue'
 import App from './app.vue'
 
-document.addEventListener('turbolinks:load', () => {
-  document.body.appendChild(document.createElement('hello'))
-  const app = new Vue(App).$mount('hello')
+function destroyVue() {
+  this.$destroy()
+  document.removeEventListener('turbolinks:before-cache', destroyVue)
+}
 
-  console.log(app)
+document.addEventListener('turbolinks:load', () => {
+  let element = document.getElementById('hello')
+  if (element != null) {
+    let app = new Vue({
+      beforeMount: function() {
+        this.$originalElement = this.$el.outerHTML
+        document.addEventListener('turbolinks:before-cache', destroyVue.bind(this))
+      },
+      destroyed: function() {
+        this.$el.outerHTML = this.$originalElement
+      },
+      render: h => h(App),
+    }).$mount('#hello')
+  }
 })
