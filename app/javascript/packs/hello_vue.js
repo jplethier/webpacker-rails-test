@@ -5,24 +5,14 @@
 // All it does is render <div>Hello Vue</div> at the bottom of the page.
 
 import Vue from 'vue'
+import TurbolinksAdapter from 'vue-turbolinks'
 import App from './app.vue'
-
-function destroyVue() {
-  this.$destroy()
-  document.removeEventListener('turbolinks:before-cache', destroyVue)
-}
 
 document.addEventListener('turbolinks:load', () => {
   let element = document.getElementById('hello')
   if (element != null) {
     let app = new Vue({
-      beforeMount: function() {
-        this.$originalElement = this.$el.outerHTML
-        document.addEventListener('turbolinks:before-cache', destroyVue.bind(this))
-      },
-      destroyed: function() {
-        this.$el.outerHTML = this.$originalElement
-      },
+      mixins: [TurbolinksAdapter],
       render: h => h(App),
     }).$mount('#hello')
   }
